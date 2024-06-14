@@ -16,10 +16,12 @@
 
 package software.amazon.cloudwatchlogs.emf.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -30,15 +32,23 @@ class MetricDefinition extends Metric {
 
     MetricDefinition(Unit unit, StorageResolution storageResolution, List<Double> values) {
         this.unit = unit;
-        this.storageResolution = StorageResolution.STANDARD;
+        this.storageResolution = storageResolution;
         this.values = values;
     }
 
     MetricDefinition(
             String name, Unit unit, StorageResolution storageResolution, List<Double> values) {
         this.unit = unit;
-        this.storageResolution = StorageResolution.STANDARD;
+        this.storageResolution = storageResolution;
         this.values = values;
+        this.name = name;
+    }
+
+    MetricDefinition(
+            String name, Unit unit, StorageResolution storageResolution, Double value) {
+        this.unit = unit;
+        this.storageResolution = storageResolution;
+        this.values = Arrays.asList(value);
         this.name = name;
     }
 }
