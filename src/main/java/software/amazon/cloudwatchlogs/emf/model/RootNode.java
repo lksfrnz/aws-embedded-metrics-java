@@ -66,9 +66,16 @@ class RootNode {
         targetMembers.putAll(properties);
         targetMembers.putAll(getDimensions());
         for (MetricDirective metricDirective : aws.getCloudWatchMetrics()) {
-            for (MetricDefinition metric : metricDirective.getMetrics().values()) {
-                List<Double> values = metric.getValues();
-                targetMembers.put(metric.getName(), values.size() == 1 ? values.get(0) : values);
+            for (Metric metric : metricDirective.getMetrics().values()) {
+                if (metric instanceof MetricDefinition) {
+                    List<Double> values = ((MetricDefinition) metric).getValues();
+                    targetMembers.put(
+                            metric.getName(), values.size() == 1 ? values.get(0) : values);
+                } else if (metric instanceof MetricDefinitionBuilder) {
+                    List<Double> values = ((MetricDefinitionBuilder) metric).getValues();
+                    targetMembers.put(
+                            metric.getName(), values.size() == 1 ? values.get(0) : values);
+                }
             }
         }
         return targetMembers;
@@ -85,7 +92,7 @@ class RootNode {
         return dimensions;
     }
 
-    Map<String, MetricDefinition> metrics() {
+    Map<String, Metric> metrics() {
         return aws.getCloudWatchMetrics().get(0).getMetrics();
     }
 

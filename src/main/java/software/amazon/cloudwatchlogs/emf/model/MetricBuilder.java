@@ -16,70 +16,90 @@
 
 package software.amazon.cloudwatchlogs.emf.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 import software.amazon.cloudwatchlogs.emf.serializers.StorageResolutionFilter;
 import software.amazon.cloudwatchlogs.emf.serializers.StorageResolutionSerializer;
 import software.amazon.cloudwatchlogs.emf.serializers.UnitDeserializer;
 import software.amazon.cloudwatchlogs.emf.serializers.UnitSerializer;
 
-/** Represents the MetricDefinition of the EMF schema. */
-@AllArgsConstructor
-class MetricDefinition {
-    @NonNull
+abstract class Metric {
+    // @NonNull
     @Getter
     @JsonProperty("Name")
-    private String name;
+    protected String name;
 
     @Getter
     @JsonProperty("Unit")
     @JsonSerialize(using = UnitSerializer.class)
     @JsonDeserialize(using = UnitDeserializer.class)
-    private Unit unit;
+    protected Unit unit;
 
     @Getter
-    @Setter
     @JsonProperty("StorageResolution")
     @JsonInclude(
             value = JsonInclude.Include.CUSTOM,
             valueFilter =
                     StorageResolutionFilter.class) // Do not serialize when valueFilter is true
     @JsonSerialize(using = StorageResolutionSerializer.class)
-    public StorageResolution storageResolution;
+    protected StorageResolution storageResolution;
 
-    @JsonIgnore @NonNull @Getter private List<Double> values;
-
-    MetricDefinition(String name) {
-        this(name, Unit.NONE, StorageResolution.STANDARD, new ArrayList<>());
+    protected void setName(String name) {
+        this.name = name;
     }
+}
 
-    MetricDefinition(String name, double value) {
-        this(name, Unit.NONE, StorageResolution.STANDARD, value);
-    }
+interface MetricBuilder {
+    // @Getter
+    // @Setter
+    // Unit unit;
 
-    MetricDefinition(String name, Unit unit, double value) {
-        this(name, unit, StorageResolution.STANDARD, new ArrayList<>(Arrays.asList(value)));
-    }
+    // @Getter
+    // @Setter
+    // StorageResolution storageResolution;
 
-    MetricDefinition(String name, StorageResolution storageResolution, double value) {
-        this(name, Unit.NONE, storageResolution, new ArrayList<>(Arrays.asList(value)));
-    }
+    // @Getter
+    // String name;
 
-    MetricDefinition(String name, Unit unit, StorageResolution storageResolution, double value) {
-        this(name, unit, storageResolution, new ArrayList<>(Arrays.asList(value)));
-    }
+    // protected void setName(String name) {
+    //     this.name = name;
+    // }
 
-    void addValue(double value) {
-        values.add(value);
-    }
+    // MetricBuilder(Unit unit, StorageResolution storageResolution, double value) {
+    //     this.unit = unit;
+    //     this.storageResolution = storageResolution;
+    //     addValue(value);
+    // }
+
+    // MetricBuilder(Unit unit, StorageResolution storageResolution) {
+    //     this.unit = unit;
+    //     this.storageResolution = storageResolution;
+    // }
+
+    // MetricBuilder(Unit unit, double value) {
+    //     this(unit, StorageResolution.STANDARD, value);
+    // }
+
+    // MetricBuilder(double value) {
+    //     this(Unit.NONE, StorageResolution.STANDARD, value);
+    // }
+
+    // MetricBuilder(Unit unit) {
+    //     this(unit, StorageResolution.STANDARD);
+    // }
+
+    // MetricBuilder(StorageResolution storageResolution) {
+    //     this(Unit.NONE, storageResolution);
+    // }
+
+    // MetricBuilder() {
+    //     this(Unit.NONE, StorageResolution.STANDARD);
+    // }
+
+    void addValue(double value);
+
+    Metric build();
 }

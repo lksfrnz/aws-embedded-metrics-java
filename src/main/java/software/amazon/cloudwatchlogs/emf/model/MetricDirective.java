@@ -32,7 +32,7 @@ class MetricDirective {
     @JsonProperty("Namespace")
     private String namespace;
 
-    @JsonIgnore @Setter @Getter @With private Map<String, MetricDefinition> metrics;
+    @JsonIgnore @Setter @Getter @With private Map<String, Metric> metrics;
 
     @JsonIgnore
     @Getter(AccessLevel.PROTECTED)
@@ -85,16 +85,23 @@ class MetricDirective {
         metrics.compute(
                 key,
                 (k, v) -> {
-                    if (v == null) return new MetricDefinition(key, unit, storageResolution, value);
-                    else {
-                        v.addValue(value);
+                    if (v == null) {
+                        MetricDefinitionBuilder tmp =
+                                new MetricDefinitionBuilder(unit, storageResolution, value);
+                        tmp.setName(key);
+                        return (Metric) tmp;
+                    } else if (v instanceof MetricBuilder) {
+                        ((MetricBuilder) v).addValue(value);
                         return v;
+                    } else {
+                        throw new IllegalStateException("Metric already exists and is Immuatble");
                     }
                 });
     }
 
     @JsonProperty("Metrics")
-    Collection<MetricDefinition> getAllMetrics() {
+    Collection<Metric> getAllMetrics() {
+        Collection<Metric> collection = new ArrayList<Metric>();
         return metrics.values();
     }
 
