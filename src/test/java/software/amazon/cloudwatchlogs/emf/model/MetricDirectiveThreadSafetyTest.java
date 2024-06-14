@@ -50,7 +50,11 @@ public class MetricDirectiveThreadSafetyTest {
         assertEquals(metricDirective.getAllMetrics().size(), N_THREAD * N_PUT_METRIC);
         for (int i = 0; i < N_THREAD * N_PUT_METRIC; i++) {
             assertEquals(
-                    metricDirective.getMetrics().get("Metric-" + i).getValues().get(0), i, 1e-5);
+                    ((MetricDefinition) metricDirective.getMetrics().get("Metric-" + i))
+                            .getValues()
+                            .get(0),
+                    i,
+                    1e-5);
         }
     }
 
