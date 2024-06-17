@@ -16,17 +16,14 @@
 
 package software.amazon.cloudwatchlogs.emf.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NonNull;
 
 /** Represents the MetricDefinition of the EMF schema. */
-// @AllArgsConstructor
 class MetricDefinition extends Metric {
     @JsonIgnore @NonNull @Getter protected List<Double> values;
 
@@ -44,8 +41,7 @@ class MetricDefinition extends Metric {
         this.name = name;
     }
 
-    MetricDefinition(
-            String name, Unit unit, StorageResolution storageResolution, Double value) {
+    MetricDefinition(String name, Unit unit, StorageResolution storageResolution, Double value) {
         this.unit = unit;
         this.storageResolution = storageResolution;
         this.values = Arrays.asList(value);
@@ -53,6 +49,7 @@ class MetricDefinition extends Metric {
     }
 }
 
+/** Builds MetricDefinition */
 public class MetricDefinitionBuilder extends MetricDefinition implements MetricBuilder {
 
     MetricDefinitionBuilder(Unit unit, StorageResolution storageResolution, List<Double> values) {
@@ -89,10 +86,12 @@ public class MetricDefinitionBuilder extends MetricDefinition implements MetricB
         this(unit, storageResolution, new ArrayList<>(Arrays.asList(value)));
     }
 
+    /** @return a built version of this metric. */
     public MetricDefinition build() {
         return (MetricDefinition) this;
     }
 
+    /** @param value a value to add to the metric. */
     public void addValue(double value) {
         this.values.add(value);
     }

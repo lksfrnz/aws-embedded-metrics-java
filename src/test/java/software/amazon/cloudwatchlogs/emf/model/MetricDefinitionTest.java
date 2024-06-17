@@ -47,7 +47,8 @@ public class MetricDefinitionTest {
     public void testSerializeMetricDefinitionWithUnitWithoutStorageResolution()
             throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        MetricDefinitionBuilder metricDefinition = new MetricDefinitionBuilder(Unit.MILLISECONDS, 10);
+        MetricDefinitionBuilder metricDefinition =
+                new MetricDefinitionBuilder(Unit.MILLISECONDS, 10);
         metricDefinition.setName("Time");
         String metricString = objectMapper.writeValueAsString(metricDefinition);
 

@@ -26,8 +26,8 @@ import software.amazon.cloudwatchlogs.emf.serializers.StorageResolutionSerialize
 import software.amazon.cloudwatchlogs.emf.serializers.UnitDeserializer;
 import software.amazon.cloudwatchlogs.emf.serializers.UnitSerializer;
 
+/** Abstract immutable (except for name) class that all Metrics are based on. */
 abstract class Metric {
-    // @NonNull
     @Getter
     @JsonProperty("Name")
     protected String name;
@@ -47,59 +47,31 @@ abstract class Metric {
     @JsonSerialize(using = StorageResolutionSerializer.class)
     protected StorageResolution storageResolution;
 
+    /**
+     * Change the name of this metric. Should only be used within this package in MetricContext when
+     * recieving an unnamed metric from a user.
+     *
+     * @param name The new metric name.
+     */
     protected void setName(String name) {
         this.name = name;
     }
 }
 
+/** Interface that allows metrics to be built from. */
 interface MetricBuilder {
-    // @Getter
-    // @Setter
-    // Unit unit;
 
-    // @Getter
-    // @Setter
-    // StorageResolution storageResolution;
-
-    // @Getter
-    // String name;
-
-    // protected void setName(String name) {
-    //     this.name = name;
-    // }
-
-    // MetricBuilder(Unit unit, StorageResolution storageResolution, double value) {
-    //     this.unit = unit;
-    //     this.storageResolution = storageResolution;
-    //     addValue(value);
-    // }
-
-    // MetricBuilder(Unit unit, StorageResolution storageResolution) {
-    //     this.unit = unit;
-    //     this.storageResolution = storageResolution;
-    // }
-
-    // MetricBuilder(Unit unit, double value) {
-    //     this(unit, StorageResolution.STANDARD, value);
-    // }
-
-    // MetricBuilder(double value) {
-    //     this(Unit.NONE, StorageResolution.STANDARD, value);
-    // }
-
-    // MetricBuilder(Unit unit) {
-    //     this(unit, StorageResolution.STANDARD);
-    // }
-
-    // MetricBuilder(StorageResolution storageResolution) {
-    //     this(Unit.NONE, storageResolution);
-    // }
-
-    // MetricBuilder() {
-    //     this(Unit.NONE, StorageResolution.STANDARD);
-    // }
-
+    /**
+     * Adds a value to the metric.
+     *
+     * @param value the value to be added to this metric
+     */
     void addValue(double value);
 
+    /**
+     * Builds the metric.
+     *
+     * @return the built metric
+     */
     Metric build();
 }

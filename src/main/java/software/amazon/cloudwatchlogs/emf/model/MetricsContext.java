@@ -361,17 +361,16 @@ public class MetricsContext {
                                                         metricDefinition.getValues().size())));
                     }
                 }
-
-                if (!metrics.isEmpty()) {
-                    nodes.add(buildRootNode(metrics));
-                }
-                List<String> strings = new ArrayList<>();
-                for (RootNode node : nodes) {
-                    strings.add(node.serialize());
-                }
-                return strings;
             }
-            return null;
+
+            if (!metrics.isEmpty()) {
+                nodes.add(buildRootNode(metrics));
+            }
+            List<String> strings = new ArrayList<>();
+            for (RootNode node : nodes) {
+                strings.add(node.serialize());
+            }
+            return strings;
         }
     }
 

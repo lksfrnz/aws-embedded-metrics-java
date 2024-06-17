@@ -49,7 +49,8 @@ class MetricsContextTest {
         List<MetricDefinition> metrics = parseMetrics(events.get(0));
         Assertions.assertEquals(metrics.size(), metricCount);
         for (MetricDefinition metric : metrics) {
-            MetricDefinition originalMetric = (MetricDefinition) (mc.getRootNode().metrics().get(metric.getName()));
+            MetricDefinition originalMetric =
+                    (MetricDefinition) (mc.getRootNode().metrics().get(metric.getName()));
             Assertions.assertEquals(originalMetric.getName(), metric.getName());
             Assertions.assertEquals(originalMetric.getUnit(), metric.getUnit());
         }
@@ -74,7 +75,8 @@ class MetricsContextTest {
         }
         Assertions.assertEquals(metricCount, allMetrics.size());
         for (MetricDefinition metric : allMetrics) {
-            MetricDefinition originalMetric = (MetricDefinition) (mc.getRootNode().metrics().get(metric.getName()));
+            MetricDefinition originalMetric =
+                    (MetricDefinition) (mc.getRootNode().metrics().get(metric.getName()));
             Assertions.assertEquals(originalMetric.getName(), metric.getName());
             Assertions.assertEquals(originalMetric.getUnit(), metric.getUnit());
         }
@@ -205,7 +207,9 @@ class MetricsContextTest {
                         new MetricDefinition(
                                 name, unit, StorageResolution.STANDARD, (ArrayList) value));
             } else {
-                metricDefinitions.add(new MetricDefinition(name, unit, StorageResolution.STANDARD, (double) value));
+                metricDefinitions.add(
+                        new MetricDefinition(
+                                name, unit, StorageResolution.STANDARD, (double) value));
             }
         }
         return metricDefinitions;
