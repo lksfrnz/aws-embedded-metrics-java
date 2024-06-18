@@ -20,7 +20,11 @@ import java.time.Instant;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.cloudwatchlogs.emf.Constants;
-import software.amazon.cloudwatchlogs.emf.exception.*;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidNamespaceException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidTimestampException;
+import software.amazon.cloudwatchlogs.emf.model.AggregationType;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
@@ -100,7 +104,9 @@ public class Validator {
             double value,
             Unit unit,
             StorageResolution storageResolution,
-            Map<String, StorageResolution> metricNameAndResolutionMap)
+            AggregationType aggregationType,
+            Map<String, StorageResolution> metricNameAndResolutionMap,
+            Map<String, AggregationType> metricNameAndAggregationMap)
             throws InvalidMetricException {
 
         if (name == null || name.trim().isEmpty()) {
@@ -135,6 +141,14 @@ public class Validator {
                     "Resolution for metric "
                             + name
                             + " is already set. A single log event cannot have a metric with two different resolutions.");
+        }
+
+        if ((metricNameAndAggregationMap.containsKey(name))
+                && (!metricNameAndAggregationMap.get(name).equals(aggregationType))) {
+            throw new InvalidMetricException(
+                    "Aggregation type for metric "
+                            + name
+                            + " is already set. A single log event cannot have a metric with two different aggregation types.");
         }
     }
 
