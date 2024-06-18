@@ -260,4 +260,34 @@ class MetricDirectiveTest {
                 "{\"Dimensions\":[[\"Version\"],[\"Region\"],[\"Instance\"]],\"Metrics\":[],\"Namespace\":\"aws-embedded-metrics\"}",
                 serializedMetricDirective);
     }
+
+    @Test
+    void testPutSameMetricMultipleTimesStatisticSet() {
+        MetricDirective metricDirective = new MetricDirective();
+        metricDirective.putMetric(
+                "Time", 10, Unit.NONE, StorageResolution.STANDARD, AggregationType.STATISTIC_SET);
+        metricDirective.putMetric(
+                "Time", 20, Unit.NONE, StorageResolution.STANDARD, AggregationType.STATISTIC_SET);
+
+        Assertions.assertEquals(1, metricDirective.getAllMetrics().size());
+        StatisticSet[] mds = metricDirective.getAllMetrics().toArray(new StatisticSet[0]);
+        Assertions.assertEquals(new Statistics(20.0, 10.0, 2, 30.0), mds[0].getValues());
+    }
+
+    @Test
+    void testPutSameMetric1000TimesStatisticSet() {
+        MetricDirective metricDirective = new MetricDirective();
+        for (int i = 1; i <= 1000; i++) {
+            metricDirective.putMetric(
+                    "Time",
+                    i,
+                    Unit.NONE,
+                    StorageResolution.STANDARD,
+                    AggregationType.STATISTIC_SET);
+        }
+
+        Assertions.assertEquals(1, metricDirective.getAllMetrics().size());
+        StatisticSet[] mds = metricDirective.getAllMetrics().toArray(new StatisticSet[0]);
+        Assertions.assertEquals(new Statistics(1000.0, 1.0, 1000, 500500.0), mds[0].getValues());
+    }
 }
