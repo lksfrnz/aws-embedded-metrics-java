@@ -82,6 +82,11 @@ public class MetricDefinition extends Metric<List<Double>> {
         return values.size() == 1 ? values.get(0) : values;
     }
 
+    @Override
+    public boolean hasValidValues() {
+        return values != null && !values.isEmpty();
+    }
+
     public static class MetricDefinitionBuilder
             extends Metric.MetricBuilder<List<Double>, MetricDefinitionBuilder> {
 

@@ -41,7 +41,7 @@ public abstract class Metric<V> {
     @JsonProperty("Unit")
     @JsonSerialize(using = UnitSerializer.class)
     @JsonDeserialize(using = UnitDeserializer.class)
-    protected Unit unit;
+    protected Unit unit = Unit.NONE;
 
     @JsonProperty("StorageResolution")
     @JsonInclude(
@@ -49,7 +49,7 @@ public abstract class Metric<V> {
             valueFilter =
                     StorageResolutionFilter.class) // Do not serialize when valueFilter is true
     @JsonSerialize(using = StorageResolutionSerializer.class)
-    protected StorageResolution storageResolution;
+    protected StorageResolution storageResolution = StorageResolution.STANDARD;
 
     @JsonIgnore @Getter protected V values;
 
@@ -57,6 +57,9 @@ public abstract class Metric<V> {
     protected Object getFormattedValues() {
         return this.getValues();
     }
+
+    /** @return true if the values of this metric are valid, false otherwise. */
+    public abstract boolean hasValidValues();
 
     /**
      * Creates a Metric with the first {@code size} values of the current metric
@@ -107,6 +110,10 @@ public abstract class Metric<V> {
         public T storageResolution(StorageResolution storageResolution) {
             this.storageResolution = storageResolution;
             return getThis();
+        }
+
+        public boolean hasValidValues() {
+            return build().hasValidValues();
         }
 
         protected Metric getMetricValuesOverSize(int size) {

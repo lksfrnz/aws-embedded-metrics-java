@@ -11,6 +11,7 @@ public class MetricDirectiveThreadSafetyTest {
     private volatile Throwable throwable = null;
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testConcurrentPutMetricWithDifferentKey() throws InterruptedException {
         final int N_THREAD = 100;
         final int N_PUT_METRIC = 1000;
@@ -59,6 +60,7 @@ public class MetricDirectiveThreadSafetyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testConcurrentPutMetricWithSameKey() throws InterruptedException {
         final int N_THREAD = 100;
         final int N_PUT_METRIC = 1000;
