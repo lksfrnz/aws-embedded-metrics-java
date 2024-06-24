@@ -126,6 +126,7 @@ public class MetricsContext {
      * @param value Value of the metric
      * @param unit The unit of the metric
      * @param storageResolution The resolution of the metric
+     * @param aggregationType The aggregation type of the metric
      * @throws InvalidMetricException if the metric is invalid
      */
     public void putMetric(
