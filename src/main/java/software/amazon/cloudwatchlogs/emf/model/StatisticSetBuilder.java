@@ -18,12 +18,11 @@ package software.amazon.cloudwatchlogs.emf.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
 import lombok.NonNull;
 
 /** Represents the StatisticSet of the EMF schema. */
 class StatisticSet extends Metric {
-    @JsonIgnore @NonNull @Getter protected Statistics values;
+    @JsonIgnore @NonNull protected Statistics values;
 
     StatisticSet(
             Unit unit,
@@ -49,6 +48,11 @@ class StatisticSet extends Metric {
         this.unit = unit;
         this.storageResolution = storageResolution;
         this.values = statistics;
+    }
+
+    @Override
+    Statistics getValues() {
+        return values;
     }
 
     @Override
@@ -116,7 +120,8 @@ class Statistics {
                 || (count == 1 && max != min)
                 || min + max * (count - 1) < sum
                 || max + min * (count - 1) > sum) {
-            throw new IllegalArgumentException("This is an impossible statistic set");
+            throw new IllegalArgumentException(
+                    "This is an impossible statistic set, there is no set of values that can create these statistics.");
         }
         this.max = max;
         this.min = min;
