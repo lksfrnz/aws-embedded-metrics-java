@@ -92,28 +92,23 @@ class MetricDirective {
                 key,
                 (k, v) -> {
                     if (v == null) {
-                        Metric metric;
                         switch (aggregationType) {
                             case STATISTIC_SET:
-                                StatisticSetBuilder statisticSet =
-                                        new StatisticSetBuilder(unit, storageResolution);
-                                statisticSet.addValue(value);
-                                metric = statisticSet;
-                                break;
+                                return StatisticSet.builder()
+                                        .name(k)
+                                        .unit(unit)
+                                        .storageResolution(storageResolution)
+                                        .addValue(value);
                             case NONE:
                             default:
-                                MetricDefinition.MetricDefinitionBuilder builder =
-                                        MetricDefinition.builder()
-                                                .name(k)
-                                                .unit(unit)
-                                                .storageResolution(storageResolution)
-                                                .addValue(value);
-                                return builder;
+                                return MetricDefinition.builder()
+                                        .name(k)
+                                        .unit(unit)
+                                        .storageResolution(storageResolution)
+                                        .addValue(value);
                         }
-                        metric.setName(key);
-                        return metric;
-                    } else if (v instanceof MetricBuilder) {
-                        ((MetricBuilder) v).addValue(value);
+                    } else if (v instanceof Metric.MetricBuilder) {
+                        ((Metric.MetricBuilder) v).addValue(value);
                         return v;
                     } else {
                         throw new InvalidMetricException("Metric already exists and is Immutable");

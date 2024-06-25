@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NonNull;
 
 /** Represents the StatisticSet of the EMF schema. */
-class StatisticSet extends Metric {
+public class StatisticSet extends Metric {
     @JsonIgnore @NonNull protected Statistics values;
 
     StatisticSet(
@@ -36,7 +36,7 @@ class StatisticSet extends Metric {
         this.values = new Statistics(max, min, count, sum);
     }
 
-    StatisticSet(
+    protected StatisticSet(
             String name, Unit unit, StorageResolution storageResolution, Statistics statistics) {
         this.unit = unit;
         this.storageResolution = storageResolution;
@@ -64,51 +64,49 @@ class StatisticSet extends Metric {
     protected Metric getMetricValuesOverSize(int size) {
         return null;
     }
-}
 
-/** Builds StatisticSet */
-public class StatisticSetBuilder extends StatisticSet implements MetricBuilder {
-
-    StatisticSetBuilder(
-            Unit unit,
-            StorageResolution storageResolution,
-            double max,
-            double min,
-            int count,
-            double sum) {
-        super(unit, storageResolution, max, min, count, sum);
+    public static StatisticSetBuilder builder() {
+        return new StatisticSetBuilder();
     }
 
-    protected StatisticSetBuilder(String name, Unit unit, StorageResolution storageResolution) {
-        super(name, unit, storageResolution, new Statistics());
-    }
+    public static class StatisticSetBuilder extends StatisticSet implements Metric.MetricBuilder {
+        public StatisticSetBuilder() {
+            super(Unit.NONE, StorageResolution.STANDARD, new Statistics());
+        }
 
-    StatisticSetBuilder(Unit unit, StorageResolution storageResolution) {
-        super(unit, storageResolution, new Statistics());
-    }
+        protected StatisticSetBuilder name(@NonNull String name) {
+            this.name = name;
+            return this;
+        }
 
-    StatisticSetBuilder(StorageResolution storageResolution) {
-        this(Unit.NONE, storageResolution);
-    }
+        @Override
+        public StatisticSetBuilder addValue(double value) {
+            this.values.addValue(value);
+            return this;
+        }
 
-    StatisticSetBuilder(Unit unit) {
-        this(unit, StorageResolution.STANDARD);
-    }
+        public StatisticSetBuilder unit(Unit unit) {
+            this.unit = unit;
+            return this;
+        }
 
-    StatisticSetBuilder() {
-        this(Unit.NONE, StorageResolution.STANDARD);
-    }
+        public StatisticSetBuilder storageResolution(StorageResolution storageResolution) {
+            this.storageResolution = storageResolution;
+            return this;
+        }
 
-    /** @return a built version of this metric. */
-    @Override
-    public StatisticSet build() {
-        return (StatisticSet) this;
-    }
+        public StatisticSetBuilder values(@NonNull Statistics values) {
+            this.values = values;
+            return this;
+        }
 
-    /** @param value a value to add to the metric. */
-    @Override
-    public void addValue(double value) {
-        values.addValue(value);
+        @Override
+        public StatisticSet build() {
+            if (name == null) {
+                return new StatisticSet(unit, storageResolution, values);
+            }
+            return new StatisticSet(name, unit, storageResolution, values);
+        }
     }
 }
 
