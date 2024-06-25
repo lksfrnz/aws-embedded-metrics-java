@@ -28,9 +28,13 @@ public class StatisticSetTest {
     public void testSerializeStatisticSetWithoutUnitWithHighStorageResolution()
             throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        StatisticSetBuilder statisticSet = new StatisticSetBuilder(StorageResolution.HIGH);
-        statisticSet.addValue(10);
-        statisticSet.setName("Time");
+
+        StatisticSet statisticSet =
+                StatisticSet.builder()
+                        .storageResolution(StorageResolution.HIGH)
+                        .name("Time")
+                        .addValue(10)
+                        .build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"None\",\"StorageResolution\":1}", metricString);
@@ -40,9 +44,9 @@ public class StatisticSetTest {
     public void testSerializeStatisticSetWithUnitWithoutStorageResolution()
             throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        StatisticSetBuilder statisticSet = new StatisticSetBuilder(Unit.MILLISECONDS);
-        statisticSet.addValue(10);
-        statisticSet.setName("Time");
+
+        StatisticSet statisticSet =
+                StatisticSet.builder().unit(Unit.MILLISECONDS).name("Time").addValue(10).build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"Milliseconds\"}", metricString);
@@ -52,9 +56,13 @@ public class StatisticSetTest {
     public void testSerializeStatisticSetWithoutUnitWithStandardStorageResolution()
             throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        StatisticSetBuilder statisticSet = new StatisticSetBuilder(StorageResolution.STANDARD);
-        statisticSet.addValue(10);
-        statisticSet.setName("Time");
+
+        StatisticSet statisticSet =
+                StatisticSet.builder()
+                        .storageResolution(StorageResolution.STANDARD)
+                        .name("Time")
+                        .addValue(10)
+                        .build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"None\"}", metricString);
@@ -63,8 +71,7 @@ public class StatisticSetTest {
     @Test
     public void testSerializeStatisticSetWithoutUnit() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        StatisticSetBuilder statisticSet = new StatisticSetBuilder();
-        statisticSet.setName("Time");
+        StatisticSet statisticSet = StatisticSet.builder().name("Time").build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"None\"}", metricString);
@@ -73,10 +80,13 @@ public class StatisticSetTest {
     @Test
     public void testSerializeStatisticSet() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        StatisticSetBuilder statisticSet =
-                new StatisticSetBuilder(Unit.MILLISECONDS, StorageResolution.HIGH);
-        statisticSet.addValue(10);
-        statisticSet.setName("Time");
+        StatisticSet statisticSet =
+                StatisticSet.builder()
+                        .unit(Unit.MILLISECONDS)
+                        .storageResolution(StorageResolution.HIGH)
+                        .name("Time")
+                        .addValue(10)
+                        .build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
         assertEquals(
@@ -86,7 +96,7 @@ public class StatisticSetTest {
 
     @Test
     public void testAddValues() {
-        StatisticSetBuilder ssb = new StatisticSetBuilder();
+        StatisticSet.StatisticSetBuilder ssb = StatisticSet.builder();
         ssb.addValue(10);
         assertEquals(new Statistics(10., 10., 1, 10.), ssb.getValues());
 
@@ -96,7 +106,7 @@ public class StatisticSetTest {
 
     @Test
     public void testManyAddValues() {
-        StatisticSetBuilder ssb = new StatisticSetBuilder();
+        StatisticSet.StatisticSetBuilder ssb = StatisticSet.builder();
         for (int i = 1; i < 100; i++) {
             ssb.addValue(i);
             assertEquals(new Statistics(i, 1., i, i * (i + 1) / 2), ssb.getValues());
@@ -105,14 +115,12 @@ public class StatisticSetTest {
 
     @Test
     public void testBuildBuilder() {
-        StatisticSetBuilder ssb = new StatisticSetBuilder();
-        ssb.addValue(10);
-        StatisticSet ss = ssb.build();
-        assertEquals(ss.getValues(), ssb.getValues());
+        StatisticSet statisticSet = StatisticSet.builder().addValue(10).build();
+        assertEquals(statisticSet.getValues(), statisticSet.getValues());
 
-        assertEquals(ss.name, null);
-        ss.setName("test");
-        assertEquals(ss.name, "test");
+        assertEquals(statisticSet.name, null);
+        statisticSet.setName("test");
+        assertEquals(statisticSet.name, "test");
     }
 
     @Test
