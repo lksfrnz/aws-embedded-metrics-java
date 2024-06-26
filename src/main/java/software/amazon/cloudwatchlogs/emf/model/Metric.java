@@ -16,6 +16,7 @@
 
 package software.amazon.cloudwatchlogs.emf.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -31,7 +32,7 @@ import software.amazon.cloudwatchlogs.emf.serializers.UnitSerializer;
 
 /** Abstract immutable (except for name) class that all Metrics are based on. */
 @Getter
-public abstract class Metric {
+public abstract class Metric<V> {
     @JsonProperty("Name")
     @Setter(AccessLevel.PROTECTED)
     @NonNull
@@ -50,8 +51,7 @@ public abstract class Metric {
     @JsonSerialize(using = StorageResolutionSerializer.class)
     protected StorageResolution storageResolution;
 
-    /** @return the values stored by this metric. */
-    abstract Object getValues();
+    @JsonIgnore @Getter protected V values;
 
     /** @return the values of this metric formatted to be flushed */
     protected Object getFormattedValues() {
@@ -76,20 +76,49 @@ public abstract class Metric {
      */
     protected abstract Metric getMetricValuesOverSize(int size);
 
-    public static interface MetricBuilder {
+    public abstract static class MetricBuilder<V, T extends MetricBuilder<V, T>> extends Metric<V> {
+
+        protected abstract T getThis();
 
         /**
          * Adds a value to the metric.
          *
          * @param value the value to be added to this metric
          */
-        MetricBuilder addValue(double value);
+        abstract T addValue(double value);
 
         /**
          * Builds the metric.
          *
          * @return the built metric
          */
-        Metric build();
+        abstract Metric build();
+
+        protected T name(@NonNull String name) {
+            this.name = name;
+            return getThis();
+        }
+
+        public T unit(Unit unit) {
+            this.unit = unit;
+            return getThis();
+        }
+
+        public T storageResolution(StorageResolution storageResolution) {
+            this.storageResolution = storageResolution;
+            return getThis();
+        }
+
+        protected Metric getMetricValuesOverSize(int size) {
+            return build().getMetricValuesOverSize(size);
+        }
+
+        protected Metric getMetricValuesUnderSize(int size) {
+            return build().getMetricValuesUnderSize(size);
+        }
+
+        protected Object getFormattedValues() {
+            return build().getFormattedValues();
+        }
     }
 }

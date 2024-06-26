@@ -28,7 +28,7 @@ class MetricDefinitionTest {
 
     @Test(expected = NullPointerException.class)
     public void testThrowExceptionIfNameIsNull() {
-        MetricDefinition builder = MetricDefinition.builder();
+        MetricDefinition.MetricDefinitionBuilder builder = MetricDefinition.builder();
         builder.setName(null);
     }
 
@@ -80,7 +80,7 @@ class MetricDefinitionTest {
     @Test
     public void testSerializeMetricDefinitionWithoutUnit() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        MetricDefinition metricDefinition = MetricDefinition.builder().name("Time");
+        MetricDefinition metricDefinition = MetricDefinition.builder().name("Time").build();
         String metricString = objectMapper.writeValueAsString(metricDefinition);
 
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"None\"}", metricString);

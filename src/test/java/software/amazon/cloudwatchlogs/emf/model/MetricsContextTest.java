@@ -48,9 +48,8 @@ class MetricsContextTest {
 
         List<MetricDefinition> metrics = parseMetrics(events.get(0));
         Assertions.assertEquals(metrics.size(), metricCount);
-        for (MetricDefinition metric : metrics) {
-            MetricDefinition originalMetric =
-                    (MetricDefinition) (mc.getRootNode().metrics().get(metric.getName()));
+        for (Metric metric : metrics) {
+            Metric originalMetric = mc.getRootNode().metrics().get(metric.getName());
             Assertions.assertEquals(originalMetric.getName(), metric.getName());
             Assertions.assertEquals(originalMetric.getUnit(), metric.getUnit());
         }
@@ -74,9 +73,9 @@ class MetricsContextTest {
             allMetrics.addAll(parseMetrics(event));
         }
         Assertions.assertEquals(metricCount, allMetrics.size());
-        for (MetricDefinition metric : allMetrics) {
-            MetricDefinition originalMetric =
-                    (MetricDefinition) (mc.getRootNode().metrics().get(metric.getName()));
+        for (Metric metric : allMetrics) {
+            Metric originalMetric = mc.getRootNode().metrics().get(metric.getName());
+
             Assertions.assertEquals(originalMetric.getName(), metric.getName());
             Assertions.assertEquals(originalMetric.getUnit(), metric.getUnit());
         }
