@@ -432,7 +432,7 @@ public class MetricsContext {
      * @return the serialized strings.
      * @throws JsonProcessingException if there's any object that cannot be serialized
      */
-    public List<String> serialize() throws JsonProcessingException {
+    public List<String> serialize() throws JsonProcessingException, InvalidMetricException {
         if (rootNode.metrics().size() <= Constants.MAX_METRICS_PER_EVENT
                 && !anyMetricWithTooManyDataPoints(rootNode)) {
             return Arrays.asList(this.rootNode.serialize());

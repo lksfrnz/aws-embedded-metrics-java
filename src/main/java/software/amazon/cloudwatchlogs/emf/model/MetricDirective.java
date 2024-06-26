@@ -97,6 +97,9 @@ class MetricDirective {
                             case STATISTIC_SET:
                                 builder = StatisticSet.builder();
                                 break;
+                            case HISTOGRAM:
+                                builder = HistogramMetric.builder();
+                                break;
                             case LIST:
                             default:
                                 builder = MetricDefinition.builder();
@@ -125,6 +128,18 @@ class MetricDirective {
      * @param value the value of the metric
      */
     void setMetric(String key, Metric value) {
+        value.setName(key);
+        metrics.put(key, value);
+    }
+
+    /**
+     * Sets a metric to the given value. If a metric with the same name already exists, it will be
+     * overwritten.
+     *
+     * @param key the name of the metric
+     * @param value the value of the metric
+     */
+    void setMetric(String key, HistogramMetric value) {
         value.setName(key);
         metrics.put(key, value);
     }
