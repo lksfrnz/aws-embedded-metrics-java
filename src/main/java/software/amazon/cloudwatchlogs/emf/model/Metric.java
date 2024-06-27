@@ -41,7 +41,7 @@ public abstract class Metric<V> {
     @JsonProperty("Unit")
     @JsonSerialize(using = UnitSerializer.class)
     @JsonDeserialize(using = UnitDeserializer.class)
-    protected Unit unit;
+    protected Unit unit = Unit.NONE;
 
     @JsonProperty("StorageResolution")
     @JsonInclude(
@@ -49,7 +49,7 @@ public abstract class Metric<V> {
             valueFilter =
                     StorageResolutionFilter.class) // Do not serialize when valueFilter is true
     @JsonSerialize(using = StorageResolutionSerializer.class)
-    protected StorageResolution storageResolution;
+    protected StorageResolution storageResolution = StorageResolution.STANDARD;
 
     @JsonIgnore @Getter protected V values;
 

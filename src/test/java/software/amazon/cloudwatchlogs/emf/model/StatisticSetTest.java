@@ -37,7 +37,6 @@ public class StatisticSetTest {
                         .build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
-        System.out.println(metricString);
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"None\",\"StorageResolution\":1}", metricString);
     }
 
