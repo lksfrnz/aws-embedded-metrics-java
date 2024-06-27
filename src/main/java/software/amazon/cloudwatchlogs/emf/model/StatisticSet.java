@@ -16,13 +16,11 @@
 
 package software.amazon.cloudwatchlogs.emf.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NonNull;
 
 /** Represents the StatisticSet of the EMF schema. */
-public class StatisticSet extends Metric {
-    @JsonIgnore @NonNull protected Statistics values;
+public class StatisticSet extends Metric<Statistics> {
 
     StatisticSet(
             Unit unit,
@@ -31,13 +29,14 @@ public class StatisticSet extends Metric {
             double min,
             int count,
             double sum) {
-        this.unit = unit;
-        this.storageResolution = storageResolution;
-        this.values = new Statistics(max, min, count, sum);
+        this(unit, storageResolution, new Statistics(max, min, count, sum));
     }
 
     protected StatisticSet(
-            String name, Unit unit, StorageResolution storageResolution, Statistics statistics) {
+            @NonNull String name,
+            Unit unit,
+            StorageResolution storageResolution,
+            Statistics statistics) {
         this.unit = unit;
         this.storageResolution = storageResolution;
         this.values = statistics;
@@ -51,17 +50,12 @@ public class StatisticSet extends Metric {
     }
 
     @Override
-    Statistics getValues() {
-        return values;
-    }
-
-    @Override
-    protected Metric getMetricValuesUnderSize(int size) {
+    protected StatisticSet getMetricValuesUnderSize(int size) {
         return this;
     }
 
     @Override
-    protected Metric getMetricValuesOverSize(int size) {
+    protected StatisticSet getMetricValuesOverSize(int size) {
         return null;
     }
 
@@ -69,29 +63,21 @@ public class StatisticSet extends Metric {
         return new StatisticSetBuilder();
     }
 
-    public static class StatisticSetBuilder extends StatisticSet implements Metric.MetricBuilder {
-        public StatisticSetBuilder() {
-            super(Unit.NONE, StorageResolution.STANDARD, new Statistics());
+    public static class StatisticSetBuilder
+            extends Metric.MetricBuilder<Statistics, StatisticSetBuilder> {
+
+        @Override
+        protected StatisticSetBuilder getThis() {
+            return this;
         }
 
-        protected StatisticSetBuilder name(@NonNull String name) {
-            this.name = name;
-            return this;
+        public StatisticSetBuilder() {
+            values = new Statistics();
         }
 
         @Override
         public StatisticSetBuilder addValue(double value) {
             this.values.addValue(value);
-            return this;
-        }
-
-        public StatisticSetBuilder unit(Unit unit) {
-            this.unit = unit;
-            return this;
-        }
-
-        public StatisticSetBuilder storageResolution(StorageResolution storageResolution) {
-            this.storageResolution = storageResolution;
             return this;
         }
 

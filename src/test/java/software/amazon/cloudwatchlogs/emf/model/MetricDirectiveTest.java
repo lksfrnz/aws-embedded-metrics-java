@@ -273,8 +273,9 @@ class MetricDirectiveTest {
                 "Time", 20, Unit.NONE, StorageResolution.STANDARD, AggregationType.STATISTIC_SET);
 
         Assertions.assertEquals(1, metricDirective.getAllMetrics().size());
-        StatisticSet[] mds = metricDirective.getAllMetrics().toArray(new StatisticSet[0]);
-        Assertions.assertEquals(new Statistics(20.0, 10.0, 2, 30.0), mds[0].getValues());
+        Metric[] mds = metricDirective.getAllMetrics().toArray(new Metric[0]);
+        Assertions.assertEquals(
+                new Statistics(20.0, 10.0, 2, 30.0), (Statistics) mds[0].getValues());
     }
 
     @Test
@@ -290,7 +291,8 @@ class MetricDirectiveTest {
         }
 
         Assertions.assertEquals(1, metricDirective.getAllMetrics().size());
-        StatisticSet[] mds = metricDirective.getAllMetrics().toArray(new StatisticSet[0]);
-        Assertions.assertEquals(new Statistics(1000.0, 1.0, 1000, 500500.0), mds[0].getValues());
+        Metric[] mds = metricDirective.getAllMetrics().toArray(new Metric[0]);
+        Assertions.assertEquals(
+                new Statistics(1000.0, 1.0, 1000, 500500.0), (Statistics) mds[0].getValues());
     }
 }

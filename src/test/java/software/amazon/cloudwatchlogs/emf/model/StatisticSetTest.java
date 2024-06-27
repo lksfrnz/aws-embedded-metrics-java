@@ -32,11 +32,12 @@ public class StatisticSetTest {
         StatisticSet statisticSet =
                 StatisticSet.builder()
                         .storageResolution(StorageResolution.HIGH)
-                        .name("Time")
                         .addValue(10)
+                        .name("Time")
                         .build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
 
+        System.out.println(metricString);
         assertEquals("{\"Name\":\"Time\",\"Unit\":\"None\",\"StorageResolution\":1}", metricString);
     }
 
@@ -44,7 +45,6 @@ public class StatisticSetTest {
     public void testSerializeStatisticSetWithUnitWithoutStorageResolution()
             throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-
         StatisticSet statisticSet =
                 StatisticSet.builder().unit(Unit.MILLISECONDS).name("Time").addValue(10).build();
         String metricString = objectMapper.writeValueAsString(statisticSet);
