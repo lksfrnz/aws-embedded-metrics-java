@@ -16,17 +16,9 @@
 
 package software.amazon.cloudwatchlogs.emf.annotations;
 
-import java.lang.reflect.Method;
-
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
-
-import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
-import software.amazon.cloudwatchlogs.emf.model.Unit;
-
 import java.util.HashMap;
+import org.aspectj.lang.annotation.Aspect;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 
 /** */
 @Aspect
@@ -37,7 +29,7 @@ public class MetricAnnotationMediator {
 
     private static final MetricAnnotationMediator SINGLETON = new MetricAnnotationMediator();
 
-    private final static String defaultLoggerKey = "_defaultLogger";
+    private static final String defaultLoggerKey = "_defaultLogger";
 
     // protected instead of private for testing purposes
     protected static HashMap<String, MetricsLogger> loggers;
@@ -53,7 +45,8 @@ public class MetricAnnotationMediator {
     }
 
     /**
-     * @return the logger with the specified name if it exists, otherwise will return the default logger
+     * @return the logger with the specified name if it exists, otherwise will return the default
+     *     logger
      * @see MetricAnnotationMediator#getDefaultLogger() getDefaultLogger()
      */
     public static MetricsLogger getLogger(String name) {

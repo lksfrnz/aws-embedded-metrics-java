@@ -1,18 +1,19 @@
 plugins {
-    id 'java'
-    id 'java-library'
+	id 'java'
+	id 'java-library'
 	id "io.freefair.aspectj.post-compile-weaving" version "6.4.3"
+	id 'com.diffplug.spotless' version '5.8.2'
 }
 
 repositories {
-    jcenter()
-    mavenCentral()
+	jcenter()
+	mavenCentral()
 }
 
 dependencies {
-    implementation rootProject
+	implementation rootProject
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 	compileOnly 'org.projectlombok:lombok:1.18.12'
 
 	implementation "org.aspectj:aspectjrt:1.9.22"
@@ -45,8 +46,24 @@ compileTestJava.ajc.options.compilerArgs << "-showWeaveInfo -verbose"
 compileTestJava.ajc.options.aspectpath.from sourceSets.main.output
 
 compileJava {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+spotless {
+	format 'misc', {
+		target '*.gradle', '*.md', '.gitignore'
+
+		trimTrailingWhitespace()
+		indentWithTabs()
+		endWithNewline()
+	}
+
+	java {
+		importOrder()
+		googleJavaFormat('1.7').aosp()
+		removeUnusedImports()
+	}
 }
 
 test {

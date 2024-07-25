@@ -1,18 +1,5 @@
 package software.amazon.cloudwatchlogs.emf.annotations;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
 import java.lang.reflect.Method;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -23,12 +10,9 @@ import org.aspectj.lang.reflect.MethodSignature;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
-import java.util.HashMap;
-
 @Aspect
 class MetricAnnotationProcessor {
 
-    
     /**
      * Puts a metric with the method count based on the parameters provided in the annotation.
      *
@@ -42,7 +26,6 @@ class MetricAnnotationProcessor {
 
         // Execute the method and capture whether a throwable is thrown.
         Throwable throwable = null;
-        System.out.println("triggered countMetric");
         try {
             return point.proceed();
         } catch (final Throwable t) {
@@ -64,16 +47,17 @@ class MetricAnnotationProcessor {
             // If the annotation applies, put the metric.
             if (shouldLog) {
                 final String metricName =
-                countMetricAnnotation.name().isEmpty()
-                        ? String.format(
-                                "%s.%s.%s",
-                                method.getDeclaringClass().getSimpleName(),
-                                method.getName(),
+                        countMetricAnnotation.name().isEmpty()
+                                ? String.format(
+                                        "%s.%s.%s",
+                                        method.getDeclaringClass().getSimpleName(),
+                                        method.getName(),
                                         "Count")
-                        : countMetricAnnotation.name();
+                                : countMetricAnnotation.name();
                 final double value = countMetricAnnotation.value();
 
-                MetricsLogger logger = MetricAnnotationMediator.getLogger(countMetricAnnotation.logger());
+                MetricsLogger logger =
+                        MetricAnnotationMediator.getLogger(countMetricAnnotation.logger());
                 logger.putMetric(
                         metricName, value, Unit.COUNT, countMetricAnnotation.aggregationType());
             }
@@ -87,11 +71,11 @@ class MetricAnnotationProcessor {
      * @return The result of the method call.
      * @throws Throwable if the method fails.
      */
-    @Around("execution(* *(..)) && @annotation(software.amazon.cloudwatchlogs.emf.annotations.TimeMetric)")
+    @Around(
+            "execution(* *(..)) && @annotation(software.amazon.cloudwatchlogs.emf.annotations.TimeMetric)")
     public Object aroundTimeMetric(final ProceedingJoinPoint point) throws Throwable {
 
         // Execute the method and capture whether a throwable is thrown.
-        System.out.println("triggered timeMetric");
         final double startTime = System.currentTimeMillis(); // capture the start time
         Throwable throwable = null;
         try {
@@ -115,17 +99,21 @@ class MetricAnnotationProcessor {
             // If the annotation applies, put the metric.
             if (shouldLog) {
                 final String metricName =
-                timeMetricAnnotation.name().isEmpty()
-                        ? String.format(
-                                "%s.%s.%s",
-                                method.getDeclaringClass().getSimpleName(),
-                                method.getName(),
+                        timeMetricAnnotation.name().isEmpty()
+                                ? String.format(
+                                        "%s.%s.%s",
+                                        method.getDeclaringClass().getSimpleName(),
+                                        method.getName(),
                                         "Time")
-                        : timeMetricAnnotation.name();
+                                : timeMetricAnnotation.name();
 
-                MetricsLogger logger = MetricAnnotationMediator.getLogger(timeMetricAnnotation.logger());
+                MetricsLogger logger =
+                        MetricAnnotationMediator.getLogger(timeMetricAnnotation.logger());
                 logger.putMetric(
-                        metricName, time, Unit.MILLISECONDS, timeMetricAnnotation.aggregationType());
+                        metricName,
+                        time,
+                        Unit.MILLISECONDS,
+                        timeMetricAnnotation.aggregationType());
             }
         }
     }

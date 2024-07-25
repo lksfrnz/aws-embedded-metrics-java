@@ -18,7 +18,6 @@ package software.amazon.cloudwatchlogs.emf.sinks;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 
 public class SinkShunt implements ISink {

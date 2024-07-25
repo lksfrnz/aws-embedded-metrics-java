@@ -16,13 +16,23 @@
 
 package software.amazon.cloudwatchlogs.emf.annotations;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.CompletableFuture;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import software.amazon.cloudwatchlogs.emf.environment.Environment;
 import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
 import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
@@ -30,13 +40,12 @@ import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.sinks.SinkShunt;
 
-import java.util.Random;
-
 class MetricAnnotationMediatorTest {
     private MetricsLogger logger;
     private EnvironmentProvider envProvider;
     private SinkShunt sink;
     private Environment environment;
+    private final Random random = new Random();
 
     @BeforeEach
     public void setUp() {
@@ -52,40 +61,61 @@ class MetricAnnotationMediatorTest {
         when(environment.getType()).thenReturn("test-env-type");
 
         logger = new MetricsLogger(envProvider);
+        MetricAnnotationMediator.loggers.put("_defaultLogger", logger);
     }
 
     @Test
     void testCountMetricAnnotation()
-            throws InvalidDimensionException, DimensionSetExceededException {
-        MetricAnnotationMediator annotationLogger = MetricAnnotationMediator.getInstance();
-        annotationLogger.loggers.put("_defaultLogger", logger);
-
+            throws InvalidDimensionException, DimensionSetExceededException,
+                    JsonProcessingException {
         for (int i = 0; i < 10; i++) {
-            count();
+            countMethod();
         }
 
-        MetricAnnotationMediator.getDefaultLogger().flush();
+        MetricAnnotationMediator.flushAll();
 
-        System.out.println("Sink test");
         for (String log : sink.getLogEvents()) {
             System.out.println(log);
-        } 
-        assertTrue(false);
+            ArrayList<String> metricNames = parseMetricNames(log);
+            Assertions.assertEquals(
+                    "MetricAnnotationMediatorTest.countMethod.Count", metricNames.get(0));
+            Assertions.assertEquals(
+                    Arrays.asList(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+                    (ArrayList<Double>) parseMetricByName(log, metricNames.get(0)));
+        }
+    }
+
+    @Test
+    void testTimeMetricAnnotation() throws JsonProcessingException {
+        MetricAnnotationMediator.addLogger("example logger", new MetricsLogger(envProvider));
+
+        for (int i = 0; i < 5; i++) {
+            timeMethod();
+        }
+
+        multiAnnotationMethod();
+        MetricAnnotationMediator.flushAll();
+
+        for (String log : sink.getLogEvents()) {
+            System.out.println(log);
+            ArrayList<String> metricNames = parseMetricNames(log);
+            Assertions.assertEquals("MetricAnnotationMediatorTest.timeMethod.Time", metricNames.get(0));
+            ArrayList<Double> metricValues = (ArrayList<Double>) parseMetricByName(log, metricNames.get(0));
+            assertTrue(metricValues.stream().allMatch(value -> value >= 20 && value <= 300)); // Add a little wiggle room for the timing of the method call
+        }
     }
 
     @CountMetric
-    void count() {
-        System.out.println("triggered count");
+    void countMethod() {
+
     }
 
-    @CountMetric(logger="example logger")
+    @CountMetric(logger = "example logger")
     void countExampleLogger() {
-        System.out.println("triggered count");
     }
 
     @TimeMetric
-    void time() {
-        Random random = new Random();
+    void timeMethod() {
         int waitTime = random.nextInt(181) + 20; // Random number between 20 and 200
         try {
             Thread.sleep(waitTime);
@@ -93,5 +123,42 @@ class MetricAnnotationMediatorTest {
             // Handle interruption if needed
             Thread.currentThread().interrupt();
         }
+    }
+
+    @TimeMetric(logger="example logger")
+    void multiAnnotationMethod() {
+        int waitTime = random.nextInt(181) + 20; // Random number between 20 and 200
+        try {
+            Thread.sleep(waitTime);
+        } catch (InterruptedException e) {
+            // Handle interruption if needed
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private ArrayList<String> parseMetricNames(String event) throws JsonProcessingException {
+        Map<String, Object> rootNode = parseRootNode(event);
+        Map<String, Object> metadata = (Map<String, Object>) rootNode.get("_aws");
+        ArrayList<Map<String, Object>> metricDirectives =
+                (ArrayList<Map<String, Object>>) metadata.get("CloudWatchMetrics");
+        ArrayList<Map<String, String>> metrics =
+                (ArrayList<Map<String, String>>) metricDirectives.get(0).get("Metrics");
+
+        ArrayList<String> metricNames = new ArrayList<>();
+        for (Map<String, String> metric : metrics) {
+            metricNames.add(metric.get("Name"));
+        }
+        return metricNames;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object parseMetricByName(String event, String name) throws JsonProcessingException {
+        Map<String, Object> rootNode = parseRootNode(event);
+        return rootNode.get(name);
+    }
+
+    private Map<String, Object> parseRootNode(String event) throws JsonProcessingException {
+        return new JsonMapper().readValue(event, new TypeReference<Map<String, Object>>() {});
     }
 }
