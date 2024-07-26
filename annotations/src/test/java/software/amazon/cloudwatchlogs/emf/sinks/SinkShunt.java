@@ -16,6 +16,7 @@
 
 package software.amazon.cloudwatchlogs.emf.sinks;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
@@ -24,13 +25,13 @@ public class SinkShunt implements ISink {
 
     private MetricsContext context;
 
-    private List<String> logEvents;
+    private List<String> logEvents = new ArrayList<>();
 
     @Override
     public void accept(MetricsContext context) {
         this.context = context;
         try {
-            this.logEvents = context.serialize();
+            this.logEvents.addAll(context.serialize());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

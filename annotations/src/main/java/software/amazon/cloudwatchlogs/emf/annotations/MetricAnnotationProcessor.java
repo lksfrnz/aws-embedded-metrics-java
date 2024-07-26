@@ -1,17 +1,58 @@
 package software.amazon.cloudwatchlogs.emf.annotations;
 
 import java.lang.reflect.Method;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+import software.amazon.cloudwatchlogs.emf.model.AggregationType;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 @Aspect
 class MetricAnnotationProcessor {
+    /** private struct used to translate all annotations to be handled the same */
+    @Getter
+    @AllArgsConstructor
+    @Builder // For testing
+    protected static class AnnotationTranslator {
+        private final String name;
+        private final AggregationType aggregationType;
+        private final Boolean logSuccess;
+        private final Class<? extends Throwable>[] logExceptions;
+        private final Boolean flush;
+        private final String logger;
+        private final double value;
+        private final String defaultName;
+        private final Unit unit;
+
+        public AnnotationTranslator(CountMetric annotation) {
+            this.name = annotation.name();
+            this.aggregationType = annotation.aggregationType();
+            this.logSuccess = annotation.logSuccess();
+            this.logExceptions = annotation.logExceptions();
+            this.flush = annotation.flush();
+            this.logger = annotation.logger();
+            this.value = annotation.value();
+            this.defaultName = "Count";
+            this.unit = Unit.COUNT;
+        }
+
+        public AnnotationTranslator(TimeMetric annotation, double time) {
+            this.name = annotation.name();
+            this.aggregationType = annotation.aggregationType();
+            this.logSuccess = annotation.logSuccess();
+            this.logExceptions = annotation.logExceptions();
+            this.flush = annotation.flush();
+            this.logger = annotation.logger();
+            this.value = time;
+            this.defaultName = "Time";
+            this.unit = Unit.MILLISECONDS;
+        }
+    }
 
     /**
      * Puts a metric with the method count based on the parameters provided in the annotation.
@@ -35,31 +76,34 @@ class MetricAnnotationProcessor {
             final Method method = ((MethodSignature) point.getSignature()).getMethod();
             final CountMetric countMetricAnnotation = method.getAnnotation(CountMetric.class);
 
-            // Determine if we consider this method to have failed.
-            boolean shouldLog = false;
-            for (final Class<? extends Throwable> failureClass :
-                    countMetricAnnotation.logExceptions()) {
-                shouldLog |= failureClass.isInstance(throwable);
-            }
+            handle(throwable, method, new AnnotationTranslator(countMetricAnnotation));
+        }
+    }
 
-            shouldLog |= throwable == null && countMetricAnnotation.logSuccess();
+    /**
+     * Puts a metric with the method count based on the parameters provided in the annotation.
+     *
+     * @param point The point for the annotated method.
+     * @return The result of the method call.
+     * @throws Throwable if the method fails.
+     */
+    @Around(
+            "execution(* *(..)) && @annotation(software.amazon.cloudwatchlogs.emf.annotations.CountMetrics)")
+    public Object aroundCountMetrics(final ProceedingJoinPoint point) throws Throwable {
 
-            // If the annotation applies, put the metric.
-            if (shouldLog) {
-                final String metricName =
-                        countMetricAnnotation.name().isEmpty()
-                                ? String.format(
-                                        "%s.%s.%s",
-                                        method.getDeclaringClass().getSimpleName(),
-                                        method.getName(),
-                                        "Count")
-                                : countMetricAnnotation.name();
-                final double value = countMetricAnnotation.value();
+        // Execute the method and capture whether a throwable is thrown.
+        Throwable throwable = null;
+        try {
+            return point.proceed();
+        } catch (final Throwable t) {
+            throwable = t;
+            throw t;
+        } finally {
+            final Method method = ((MethodSignature) point.getSignature()).getMethod();
+            final CountMetrics countMetricsAnnotation = method.getAnnotation(CountMetrics.class);
 
-                MetricsLogger logger =
-                        MetricAnnotationMediator.getLogger(countMetricAnnotation.logger());
-                logger.putMetric(
-                        metricName, value, Unit.COUNT, countMetricAnnotation.aggregationType());
+            for (CountMetric countMetricAnnotation : countMetricAnnotations.value()) {
+                handle(throwable, method, new AnnotationTranslator(countMetricAnnotation));
             }
         }
     }
@@ -88,33 +132,80 @@ class MetricAnnotationProcessor {
             final Method method = ((MethodSignature) point.getSignature()).getMethod();
             final TimeMetric timeMetricAnnotation = method.getAnnotation(TimeMetric.class);
 
-            boolean shouldLog = false;
-            for (final Class<? extends Throwable> failureClass :
-                    timeMetricAnnotation.logExceptions()) {
-                shouldLog |= failureClass.isInstance(throwable);
-            }
+            handle(throwable, method, new AnnotationTranslator(timeMetricAnnotation, time));
+        }
+    }
 
-            shouldLog |= throwable == null && timeMetricAnnotation.logSuccess();
+    /**
+     * Puts a metric with the method time based on the parameters provided in the annotation.
+     *
+     * @param point The point for the annotated method.
+     * @return The result of the method call.
+     * @throws Throwable if the method fails.
+     */
+    @Around(
+            "execution(* *(..)) && @annotation(software.amazon.cloudwatchlogs.emf.annotations.TimeMetrics)")
+    public Object aroundTimeMetric(final ProceedingJoinPoint point) throws Throwable {
 
-            // If the annotation applies, put the metric.
-            if (shouldLog) {
-                final String metricName =
-                        timeMetricAnnotation.name().isEmpty()
-                                ? String.format(
-                                        "%s.%s.%s",
-                                        method.getDeclaringClass().getSimpleName(),
-                                        method.getName(),
-                                        "Time")
-                                : timeMetricAnnotation.name();
+        // Execute the method and capture whether a throwable is thrown.
+        final double startTime = System.currentTimeMillis(); // capture the start time
+        Throwable throwable = null;
+        try {
+            return point.proceed();
+        } catch (final Throwable t) {
+            throwable = t;
+            throw t;
+        } finally {
+            final double time = System.currentTimeMillis() - startTime; // capture the total time
+            final Method method = ((MethodSignature) point.getSignature()).getMethod();
+            final TimeMetrics timeMetricsAnnotation = method.getAnnotation(TimeMetrics.class);
 
-                MetricsLogger logger =
-                        MetricAnnotationMediator.getLogger(timeMetricAnnotation.logger());
-                logger.putMetric(
-                        metricName,
-                        time,
-                        Unit.MILLISECONDS,
-                        timeMetricAnnotation.aggregationType());
+            for (TimeMetric timeMetricAnnotation : timeMetricsAnnotation.value()) {
+                handle(throwable, method, new AnnotationTranslator(timeMetricAnnotation, time));
             }
         }
+    }
+
+    /** Handles the logging of all metrics related to an annotation and method */
+    protected static void handle(
+            Throwable throwable, Method method, AnnotationTranslator translator) {
+        if (shouldLog(throwable, translator)) {
+            final String metricName = getName(method, translator);
+            final double value = translator.getValue();
+
+            MetricsLogger logger = MetricAnnotationMediator.getLogger(translator.getLogger());
+            logger.putMetric(
+                    metricName, value, translator.getUnit(), translator.getAggregationType());
+
+            if (translator.getFlush()) {
+                MetricAnnotationMediator.flushAll();
+            }
+        }
+    }
+
+    /**
+     * @return true if this annotation's metric should be logged according to the rules defined in
+     *     the annotation.
+     */
+    protected static boolean shouldLog(Throwable throwable, AnnotationTranslator translator) {
+        boolean shouldLog = false;
+        for (final Class<? extends Throwable> failureClass : translator.getLogExceptions()) {
+            shouldLog |= failureClass.isInstance(throwable);
+        }
+
+        shouldLog |= throwable == null && translator.getLogSuccess();
+
+        return shouldLog;
+    }
+
+    /** @return the name of the metric based on the annotation and method */
+    protected static String getName(Method method, AnnotationTranslator translator) {
+        return translator.getName().isEmpty()
+                ? String.format(
+                        "%s.%s.%s",
+                        method.getDeclaringClass().getSimpleName(),
+                        method.getName(),
+                        translator.getDefaultName())
+                : translator.getName();
     }
 }
