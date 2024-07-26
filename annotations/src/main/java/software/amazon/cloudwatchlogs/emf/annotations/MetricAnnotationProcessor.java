@@ -15,9 +15,9 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 @Aspect
 class MetricAnnotationProcessor {
     /** private struct used to translate all annotations to be handled the same */
-    @Getter
     @AllArgsConstructor
     @Builder // For testing
+    @Getter
     protected static class AnnotationTranslator {
         private final String name;
         private final AggregationType aggregationType;
@@ -102,7 +102,7 @@ class MetricAnnotationProcessor {
             final Method method = ((MethodSignature) point.getSignature()).getMethod();
             final CountMetrics countMetricsAnnotation = method.getAnnotation(CountMetrics.class);
 
-            for (CountMetric countMetricAnnotation : countMetricAnnotations.value()) {
+            for (CountMetric countMetricAnnotation : countMetricsAnnotation.value()) {
                 handle(throwable, method, new AnnotationTranslator(countMetricAnnotation));
             }
         }
@@ -145,7 +145,7 @@ class MetricAnnotationProcessor {
      */
     @Around(
             "execution(* *(..)) && @annotation(software.amazon.cloudwatchlogs.emf.annotations.TimeMetrics)")
-    public Object aroundTimeMetric(final ProceedingJoinPoint point) throws Throwable {
+    public Object aroundTimeMetrics(final ProceedingJoinPoint point) throws Throwable {
 
         // Execute the method and capture whether a throwable is thrown.
         final double startTime = System.currentTimeMillis(); // capture the start time
