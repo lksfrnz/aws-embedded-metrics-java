@@ -1,5 +1,10 @@
+import java.util.HashMap;
+import java.util.Map;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+
+import software.amazon.cloudwatchlogs.emf.annotations.CountMetric;
 import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
 import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
 import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
@@ -7,11 +12,6 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-
-import software.amazon.cloudwatchlogs.emf.annotations.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Handler implements RequestHandler<Map<String, String>, String> {
 

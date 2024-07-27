@@ -1,19 +1,21 @@
 package software.amazon.cloudwatchlogs.emf.annotations;
 
 import java.lang.reflect.Method;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.AggregationType;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 @Aspect
-class MetricAnnotationProcessor {
+public class MetricAnnotationProcessor {
     /** private struct used to translate all annotations to be handled the same */
     @AllArgsConstructor
     @Builder // For testing
