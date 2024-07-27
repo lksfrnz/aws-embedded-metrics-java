@@ -5,6 +5,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.cloudwatchlogs.emf.annotations.CountMetric;
+import software.amazon.cloudwatchlogs.emf.annotations.MetricAnnotationMediator;
+import software.amazon.cloudwatchlogs.emf.annotations.TimeMetric;
 import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
 import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
 import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
@@ -15,18 +17,19 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 public class Handler implements RequestHandler<Map<String, String>, String> {
 
+    @CountMetric(name="multicount")
     @CountMetric
+    @TimeMetric
+    @TimeMetric(name="multitime")
     void tmp() {
-
+        System.out.println("tmp");
     }
 
     @Override
     public String handleRequest(Map<String, String> event, Context context) {
         String response = "200 OK";
         MetricsLogger logger = new MetricsLogger();
-
         tmp();
-
         try {
             logger.putDimensions(DimensionSet.of("Service", "Aggregator"));
             logger.putMetric("ProcessingLatency", 100, Unit.MILLISECONDS);
@@ -45,11 +48,12 @@ public class Handler implements RequestHandler<Map<String, String>, String> {
         logger.putProperty("Payload", payLoad);
         logger.flush();
 
+        System.out.println("completed aggregation successfully.");
+
         tmp();
 
-        System.out.println("completed aggregation successfully.");
+        MetricAnnotationMediator.flushAll();
 
         return response;
     }
-
 }
