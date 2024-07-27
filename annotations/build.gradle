@@ -41,10 +41,6 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 
-compileJava.ajc.options.compilerArgs << "-showWeaveInfo -verbose"
-compileTestJava.ajc.options.compilerArgs << "-showWeaveInfo -verbose"
-compileTestJava.ajc.options.aspectpath.from sourceSets.main.output
-
 compileJava {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8

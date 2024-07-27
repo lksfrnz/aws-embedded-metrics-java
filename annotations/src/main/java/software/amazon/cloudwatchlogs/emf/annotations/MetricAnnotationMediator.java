@@ -17,11 +17,9 @@
 package software.amazon.cloudwatchlogs.emf.annotations;
 
 import java.util.HashMap;
-import org.aspectj.lang.annotation.Aspect;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 
 /** */
-@Aspect
 public class MetricAnnotationMediator {
     public static MetricAnnotationMediator getInstance() {
         return SINGLETON;

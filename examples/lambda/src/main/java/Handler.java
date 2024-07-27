@@ -8,15 +8,24 @@ import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
+import software.amazon.cloudwatchlogs.emf.annotations.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class Handler implements RequestHandler<Map<String, String>, String> {
 
+    @CountMetric
+    void tmp() {
+
+    }
+
     @Override
     public String handleRequest(Map<String, String> event, Context context) {
         String response = "200 OK";
         MetricsLogger logger = new MetricsLogger();
+
+        tmp();
 
         try {
             logger.putDimensions(DimensionSet.of("Service", "Aggregator"));
@@ -35,6 +44,8 @@ public class Handler implements RequestHandler<Map<String, String>, String> {
         payLoad.put("pressure", 101.3);
         logger.putProperty("Payload", payLoad);
         logger.flush();
+
+        tmp();
 
         System.out.println("completed aggregation successfully.");
 
